@@ -3,4 +3,6 @@
     <string name="title_home">GuideMap</string>
     <string name="title_dashboard">Aurora</string>
     <string name="title_notifications">Setting</string>
+    <string name="Message_Save_Completed">Save Completed.</string>
+    <string name="Message_Save_Failed">Save Failed.</string>
 </resources>

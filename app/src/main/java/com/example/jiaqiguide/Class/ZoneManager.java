@@ -6,8 +6,10 @@ import android.graphics.Color;
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polygon;
+import com.google.gson.reflect.TypeToken;
 import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
@@ -15,9 +17,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class ZoneManager implements Iterable<Zone>{
+public class ZoneManager implements Iterable<Polygon>, OnMapLongClickListener{
 
     List<Zone> zones = new ArrayList<Zone>();
+    List<Polygon> polygons = new ArrayList<Polygon>();
     Context context;
     GoogleMap mp;
     public ZoneManager(Context context,GoogleMap mp){
@@ -25,11 +28,11 @@ public class ZoneManager implements Iterable<Zone>{
         this.mp = mp;
     }
     @Override
-    public Iterator<Zone> iterator() {
-        return zones.iterator();
+    public Iterator<Polygon> iterator() {
+        return polygons.iterator();
     }
     @Override
-    public void forEach(@NonNull Consumer<? super Zone> action) {
+    public void forEach(@NonNull Consumer<? super Polygon> action) {
         Iterable.super.forEach(action);
     }
 
@@ -43,16 +46,17 @@ public class ZoneManager implements Iterable<Zone>{
     }
     public void onMapLongClick(LatLng latLng){
         for(Zone z:zones){
-            if(PolyUtil.containsLocation(latLng,z.p.getPoints(),true)){
+            if(PolyUtil.containsLocation(latLng,z.po.getPoints(),true)){
                 z.onPolygonLongClick(latLng);
             }
         }
     }
     public void onPolygonClick(Polygon polygon){
-        for(Zone z:zones){
-            if(polygon == z.p){
-                z.onPolygonLongClick(null);
-            }
-        }
+
+    }
+
+    public static List<Zone> getSavedZones(Context context){
+        List<Zone> temp = DefaultPath.readJson(context, DefaultPath.FileType.File,"Zones",new TypeToken<List<Zone>>(){}.getType());
+        return temp;
     }
 }

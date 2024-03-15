@@ -18,7 +18,7 @@ import java.util.Random;
 import java.util.TreeMap;
 
 public class Zone{
-    public Polygon p;
+    public PolygonOptions po;
     public String Name;
     public String Description;
     public boolean isClicked =false;
@@ -28,8 +28,7 @@ public class Zone{
             Random r = new Random();
             c= Color.valueOf(r.nextInt(255),r.nextInt(255),r.nextInt(255),100);
         }
-        PolygonOptions po = null;
-
+        po = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             po = new PolygonOptions()
                     .addAll(fixLatlngs(lats))
@@ -37,7 +36,6 @@ public class Zone{
                     .strokeColor(android.R.color.white)
                     .fillColor(c.toArgb());
         }
-        p = map.addPolygon(po);
     }
     public Zone addDescription(String des){
         this.Description =des;
@@ -46,7 +44,7 @@ public class Zone{
     public Zone ChangeFillColor(Color c){
         if(c!=null)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                p.setFillColor(c.toArgb());
+                po.fillColor(c.toArgb());
             }
         return this;
     }
@@ -73,7 +71,7 @@ public class Zone{
         return Math.toDegrees(angle);
     }
     public LatLng getCenter(List<LatLng> points){
-        if(points == null)points = p.getPoints();
+        if(points == null)points = po.getPoints();
         double a = 0,b = 0;
         for(LatLng l :points){
             a+=l.latitude;
@@ -85,10 +83,10 @@ public class Zone{
     public void onPolygonLongClick(LatLng lat) {
         isClicked = !isClicked;
         if (isClicked) {
-            p.setFillColor(ColorUtils.setAlphaComponent(p.getFillColor(),230));
+            po.fillColor(ColorUtils.setAlphaComponent(po.getFillColor(),230));
             //Do something
         } else if (!(isClicked)) {
-            p.setFillColor(ColorUtils.setAlphaComponent(p.getFillColor(),100));
+            po.fillColor(ColorUtils.setAlphaComponent(po.getFillColor(), 100));
             //Do somthing
         }
     }

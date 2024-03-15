@@ -3,8 +3,10 @@ package com.example.jiaqiguide.Class;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.pm.PermissionInfo;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,9 +17,13 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
@@ -28,128 +34,80 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.internal.IGoogleMapDelegate;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class GMap extends  MapView implements OnMapReadyCallback,EditObject, GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener ,GoogleMap.OnMapLongClickListener, GoogleMap.OnPolygonClickListener{
+public class GMap implements
+        LocationListener, ActivityResultCallback {
 
     private static final int REQUEST_STORAGE_PERMISSION = 1;
     private Marker PositionMark;
-    private GMap mp;
+    private GoogleMap googleMap;
     private Bitmap myBitmap;
     ZoneManager zones;
-    GoogleMap googleMap;
-    public GMap(@NonNull Context context, Bundle savedInstanceState, GoogleMapOptions options) {
-        super(context,options);
-        onCreate(savedInstanceState);
-        getMapAsync(this);
-        mp= this;
-        //myBitmap =  Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(),R.raw.car), 100,100, true);
-        zones = new ZoneManager(this.getContext(),googleMap);
-        this.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT));
-        this.setClickable(true);
 
+    private ActivityResultLauncher<String> requestPermissionLauncher;
+    LocationManager locationManager = null;
 
+    public GMap() {
     }
 
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @SuppressLint("ServiceCast")
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMapt) {
-        this.googleMap = googleMapt;
-        googleMap.setOnMapClickListener(this);
-        googleMap.setOnMarkerClickListener(this);
-        googleMap.setOnMapLongClickListener(this);
-        googleMap.setOnPolygonClickListener(this);
+    public GMap(GoogleMap googleMap) {
+        this.googleMap = googleMap;
     }
 
-
-    @Override
-    public void onResume() {
-        super.onResume();
+    public void setMap(GoogleMap googleMap) {
+        this.googleMap = googleMap;
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
+    public void init(Context context, ActivityResultLauncher<String> art) {
+        zones = new ZoneManager(context, googleMap);
+        googleMap.setOnMapLongClickListener(zones);
+        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
+        googleMap.getUiSettings().setCompassEnabled(true);
+        googleMap.getUiSettings().setMapToolbarEnabled(false);
+        googleMap.getUiSettings().setScrollGesturesEnabled(true);
+        googleMap.getUiSettings().setScrollGesturesEnabledDuringRotateOrZoom(true);
+        googleMap.getUiSettings().setTiltGesturesEnabled(true);
+        googleMap.getUiSettings().setRotateGesturesEnabled(true);
+        requestPermissionLauncher = art;
+        try {
+            String[] str = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS).requestedPermissions;
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-    }
-
-    public void empty() {
-
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public void EndOperation(String inputName) {
-
-    }
-    public boolean checkResource(int ID){
-        try{
-            AssetFileDescriptor as=getResources().openRawResourceFd(ID);
-            if(as != null) {
-                as.close();
-                return true;
-            }
-        }catch (Exception e){
-            return false;
+        } catch (PackageManager.NameNotFoundException e) {
+            Toast.makeText(context,e.toString(),Toast.LENGTH_SHORT).show();
         }
-        return false;
-    }
-    public int getResourceId(String name){
-        return getResources().getIdentifier(name,"raw",this.getContext().getPackageName());
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @Override
-    public void TurnOnEditMode(Object ojb) {
 
     }
 
     @Override
-    public void TurnOffEditMode(Object ojb) {
-
-    }
-
-
-    @Override
-    public void onMapClick(@NonNull LatLng latLng) {
-
+    public void onLocationChanged(@NonNull Location location) {
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()), 10));
     }
 
     @Override
-    public boolean onMarkerClick(@NonNull Marker marker) {
-        return false;
+    public void onActivityResult(Object o) {
+        if (ActivityCompat.checkSelfPermission(zones.context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(zones.context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }else{
+            this.googleMap.setMyLocationEnabled(true);
+        }
+        if(locationManager == null){
+            locationManager = (LocationManager) zones.context.getSystemService(Context.LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this);
+        }
     }
 
-    @Override
-    public void onMapLongClick(@NonNull LatLng latLng) {
-        zones.onMapLongClick(latLng);
-    }
-
-    @Override
-    public void onPolygonClick(@NonNull Polygon polygon) {
-        zones.onPolygonClick(polygon);
-    }
 }
