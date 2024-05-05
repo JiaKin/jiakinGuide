@@ -1,16 +1,11 @@
 package com.example.jiaqiguide;
 
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.WindowManager;
-import android.widget.Toast;
 
-import com.example.jiaqiguide.Class.GMap;
-import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;

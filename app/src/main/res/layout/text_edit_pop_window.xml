@@ -1,0 +1,34 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#FFF">
+    <TextView
+        android:id="@+id/edit_text_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="临时文件" />
+    <EditText
+        android:id="@+id/edit_text_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="添加编辑内容                                                                                        "
+        android:inputType="textMultiLine"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+        <Button
+            android:id="@+id/button_zoneText_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="确认输入" />
+        <Button
+            android:id="@+id/button_zoneText_exit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="撤销输入"/>
+    </LinearLayout>
+</LinearLayout>

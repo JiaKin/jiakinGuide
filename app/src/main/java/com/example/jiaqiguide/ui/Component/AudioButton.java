@@ -1,20 +1,14 @@
 package com.example.jiaqiguide.ui.Component;
 
-import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Display;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -23,14 +17,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.graphics.ColorUtils;
-
 import com.example.jiaqiguide.Class.DefaultPath;
-import com.example.jiaqiguide.R;
-
-import java.io.IOException;
 
 public class AudioButton extends View implements  SeekBar.OnSeekBarChangeListener,Runnable, View.OnClickListener {
     MediaPlayer mp;
@@ -46,6 +33,7 @@ public class AudioButton extends View implements  SeekBar.OnSeekBarChangeListene
 
     public AudioButton(Context context) {
         super(context);
+
         playButton = new Button(context);
         playButton.setLayoutParams(new LinearLayout.LayoutParams(250,250));
         playButton.setTextColor(Color.parseColor("#F39921"));
@@ -99,8 +87,6 @@ public class AudioButton extends View implements  SeekBar.OnSeekBarChangeListene
         }catch (Exception e){
             return "00:00:00";
         }
-
-
     }
     public String getAudioCurrentPlayTime(){
         try {
@@ -114,29 +100,29 @@ public class AudioButton extends View implements  SeekBar.OnSeekBarChangeListene
         return AudioDisplay;
     }
     public void setAudio(String Name){
-        String path = DefaultPath.getLegalFilePath(fileType,Name);
-        if(mp!=null)mp.release();
-        mp = new MediaPlayer();
-        try{
-            mp.setDataSource(path);
-            mp.prepare();
-            mmr.setDataSource(path);
-            mp.prepare();
-            AudioName = Name;
-        } catch (IOException e) {
-            mp = MediaPlayer.create(this.getContext(),R.raw.music);
-            AudioName = "music.mp3";
+        setAudio(this.getContext().getResources().getIdentifier(Name,"raw",getContext().getPackageName()));
+    }
+
+    public void setAudio(int id){
+        try {
             Uri uri = new Uri.Builder()
                     .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
                     .authority(this.getContext().getPackageName())
                     .appendPath("raw")
-                    .appendPath(this.getContext().getResources().getResourceEntryName(R.raw.music).toLowerCase())
+                    .appendPath(this.getContext().getResources().getResourceEntryName(id).toLowerCase())
                     .build();
-            mmr.setDataSource(this.getContext(),uri);
-            //mp.prepare();
-            Toast.makeText(getContext(), "Error: Loading Audio File Failed."+mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION), Toast.LENGTH_SHORT).show();
+            if(mp!=null){
+                mp.stop();
+                mp.release();
+                mp = null;
+            }
+            mp = MediaPlayer.create(this.getContext(), id);
+            mmr.setDataSource(this.getContext(), uri);
+        } catch (Exception e){
+            Toast.makeText(getContext(), "Error: Audio Name Is Not Exist."+mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION), Toast.LENGTH_SHORT).show();
         }
     }
+
     public String getAudioInfo(){
         String Infor = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         if(Infor==null)
@@ -180,19 +166,25 @@ public class AudioButton extends View implements  SeekBar.OnSeekBarChangeListene
     public void play(){
         mp.start();
         upDateLoop.postDelayed(this, 100);
+        playButton.setTextSize(25);
+        playButton.setText("| |");
+    }
+    public void pause(){
+        mp.pause();
+        playButton.setTextSize(15);
+        playButton.setText("Play");
     }
     @Override
     public void onClick(View v) {
         if(mp.isPlaying()){
-            mp.pause();
-            playButton.setTextSize(15);
-            playButton.setText("Play");
+            pause();
         }
         else{
             play();
-            playButton.setTextSize(25);
-            playButton.setText("| |");
-
         }
+    }
+
+    public String getPlayName() {
+        return AudioName;
     }
 }

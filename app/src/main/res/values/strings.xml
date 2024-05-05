@@ -5,4 +5,5 @@
     <string name="title_notifications">Setting</string>
     <string name="Message_Save_Completed">Save Completed.</string>
     <string name="Message_Save_Failed">Save Failed.</string>
+    <item name="DirecitonButtonID" type="id" />
 </resources>
